@@ -1,0 +1,248 @@
+Installed Express
+sudo npm install -g express-generator
+
+express 05-express-first-app
+
+vadim@netuns:~/AppProjects/nodejs/basics/05-express-first-app$ npm install
+After the previouse comman dI will hve a folder called 'node_modules' with all the dependencies
+
+And I can run: npm start
+
+
+====================
+I. 
+05-express-first-app
+In bin/www I put 8000 in: var port = normalizePort(process.env.PORT || '8000'); //port serving requests
+
+1)
+A) "layout.jade":
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    ul
+      li My Text
+      //allows to put multiple lines
+      li.
+        text text text text
+        text2 text2 text2
+    input(type="text").anyClass-name#anyId
+    -var anotherCondition=true
+    if condition
+      p It's true
+    if anotherCondition
+      p Another condition is true
+    -var anyArray = [1,2,3]
+    each value in anyArray
+      p= value
+    block content
+
+
+
+
+a) title and condition are injected from index.js
+b)title comes from index.js in Эroutes" folder
+c) title title will just returns 'title' string. title= title will output the value of varibale 'title' 
+d) block content is used to extend the main layout.jade. Ex., take a look at index.jade
+
+B) "user.js":
+var express = require('express');
+var router = express.Router();
+
+/* GET users listing. */
+router.get('/', function(req, res, next) {
+  res.send('respond with a resource');
+});
+
+//I added
+router.get('/detail', function(req, res, next) {
+  res.send('Users detail');
+});
+
+
+//localhost:8000/users/detail
+
+module.exports = router;
+
+C) "index.js":
+var express = require('express');
+var router = express.Router();
+
+/* GET home page. */
+router.get('/', function(req, res, next) {
+  res.render('index', { title: 'Express', condition:true });
+});
+
+module.exports = router;
+
+D) index.jade
+extends layout
+
+block content
+  h1= title
+  p Welcome to #{title}
+
+Here wr are inserting varibale in the normal text: #{title}
+ 
+================================
+II. 06-express-handlebars-templ
+
+npm uninstall jade --save
+npm install express-handlebars --save
+
+In app.js I added:
+var hbs = require("express-handlebars");
+// view engine setup
+app.engine("hbs", hbs({extname: "hbs", defaultLayout: "layout", layoutsDir: __dirname + '/views/layouts/'}));   //extname: "hbs" extensions of file to be recognized by the engine
+I created "layouts" folder inside "views" folder
+//app.set('view engine', 'jade');
+app.set('view engine', 'hbs');
+
+
+In bin/www I put 8000 in: var port = normalizePort(process.env.PORT || '8000'); //port serving requests
+
+1) "layout.hbs":
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>{{ title }}</title>
+  <link rel='stylesheet' href='/stylesheets/style.css'>
+</head>
+<body>
+  {{{ body }}}
+</body>
+</html>
+
+
+{{{}}} will rendere html page
+
+{{}} will output content of the variable
+
+{{{ body }}} is a hook, which will e replaced when layout will be extended
+
+In index.hbs I don't have a word extend (as in jade) because in app.js I specified that the default layout is views/layouts/layout.hbs
+
+
+
+2) "error.hbs":
+<h1>{{ message }}</h1>
+
+message varibale is from app.js (?)
+
+3) "index.hbs":
+
+<h1>{{ title }}</h1>
+<p>Welcome to {{ title }} </p>
+
+{{# if condition}}
+    Condition is met
+{{ else }}
+    Condition is not met
+{{/if}}
+
+<!-- {{# each anyArray}} 
+    {{ this }}
+{{/each}} -->
+
+{{# each anyArray as |val key|}}
+    {{ key }}: {{ val }}
+{{/each}}
+
+
+
+a) {{ this }} is a current element of anyArray
+b) it's important that there is no space before '/if' in {{/if}} and before '/each' in {{/each}}
+
+
+III. 07-get-post
+
+"index.js":
+var express = require('express');
+var router = express.Router();
+
+/* GET home page. */
+router.get('/', function(req, res, next) {
+  res.render('index', { title: 'Express', condition:true, anyArray: [1,2,3] });
+});
+
+
+///test/:id passing parameter 'id'.
+//'test' is a view (test.hbs).
+router.get('/test/:id', function(req, res, next) {
+  res.render('test', {output: req.params.id});
+});
+
+
+router.post('/test/submit', function(req, res, next) {
+  //in post request all the passed parameters in body (not in params a in get)
+  var id = req.body.id;
+
+  res.redirect('/test/' + id);
+
+});
+
+module.exports = router;
+
+"test.hbs":
+<h1>You accessed this page via GET request</h1>
+<p>ID passed: {{ output }}</p>
+
+
+"index.hbs":
+<h1>{{ title }}</h1>
+<p>Welcome to {{ title }} </p>
+
+<form action="/test/submit" method="post">
+    <input type="text" name="id">
+    <button type="submit">Submit</button>
+</form>
+
+
+IV. 08-validation-sessions
+npm install --save express-validator
+npm install --save express-session
+
+In "app.js":
+var expressValidator = require("express-validator");
+var expressValidator = require("express-session");
+app.use(expressValidator()); // important: after app.use(bodyParser.json()); and app.use(bodyParser.urlencoded({ extended: false })); Validation takes place after parsing
+app.use(expressSession({secret: "vadim", saveUninitialized: false, resave: false}));  
+"saveUninitialized: true" will mean that our session will be stored in session storage even if session is not initialized. 
+"resave: true" will save our session after each request even if it was not modified. "resave: false" will save only if something get modified
+express-session package uses in-memory storage to store session which is not very good for porduction. We can use other stores (ex., some db; check github page of express-session package somwhere at the bottom)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

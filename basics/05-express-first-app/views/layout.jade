@@ -1,0 +1,22 @@
+doctype html
+html
+  head
+    title= title
+    link(rel='stylesheet', href='/stylesheets/style.css')
+  body
+    ul
+      li My Text
+      //allows to put multiple lines
+      li.
+        text text text text
+        text2 text2 text2
+    input(type="text").anyClass-name#anyId
+    -var anotherCondition=true
+    if condition
+      p It's true
+    if anotherCondition
+      p Another condition is true
+    -var anyArray = [1,2,3]
+    each value in anyArray
+      p= value
+    block content
